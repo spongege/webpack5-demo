@@ -4,6 +4,13 @@ const ESLintPlugin = require('eslint-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { Configuration } = require('webpack');
+/**
+ * @description webpack智能提示
+ * @type {Configuration}
+ */
+
 module.exports = {
 	entry: './src/index.ts',
 	mode: 'development',
@@ -16,14 +23,19 @@ module.exports = {
 		rules: [
 			{
 				test: /\.js$|\.ts$/,
-				use: {
-					loader: 'babel-loader',
-					options: {
-						// presets: ['@babel/preset-env', '@babel/preset-typescript'],
-						presets: ['@babel/preset-typescript'],
-					},
-				},
+				// SWC 在单线程情况下比 Babel 块 20 倍，四核下要快 70 倍。
+				use: 'swc-loader',
 			},
+			// {
+			// 	test: /\.js$|\.ts$/,
+			// 	use: {
+			// 		loader: 'babel-loader',
+			// 		options: {
+			// 			// presets: ['@babel/preset-env', '@babel/preset-typescript'],
+			// 			presets: ['@babel/preset-typescript'],
+			// 		},
+			// 	},
+			// },
 			// mini-css-extract-plugin 库同时提供 Loader、Plugin 组件，需要同时使用
 			// mini-css-extract-plugin 不能与 style-loader 混用，否则报错，所以上述示例中第 9 行需要判断 process.env.NODE_ENV 环境变量决定使用那个 Loader
 			// mini-css-extract-plugin 需要与 html-webpack-plugin 同时使用，才能将产物路径以 link 标签方式插入到 html 中
