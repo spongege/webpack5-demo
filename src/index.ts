@@ -1,7 +1,6 @@
-import './index.less';
+import { createApp } from 'vue';
+import App from './App.vue';
 
-const node = document.createElement('span');
+const app = createApp(App);
 
-node.textContent = 'Hello world';
-
-document.body.appendChild(node);
+app.mount('#app');

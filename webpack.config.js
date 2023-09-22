@@ -3,6 +3,7 @@ const path = require('path');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
+const { VueLoaderPlugin } = require('vue-loader');
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { Configuration } = require('webpack');
@@ -13,12 +14,17 @@ const { Configuration } = require('webpack');
 
 module.exports = {
 	entry: './src/index.ts',
+	// entry: './src/index.vue',
 	mode: 'development',
 	devtool: false,
 	output: {
 		filename: '[name].js',
 		path: path.resolve(__dirname, 'dist'),
 	},
+	// 不把vue代码打包进去
+	// externals: {
+	// 	vue: 'Vue',
+	// },
 	module: {
 		rules: [
 			{
@@ -49,36 +55,56 @@ module.exports = {
 			// 		'css-loader',
 			// 	],
 			// },
+			// {
+			// 	test: /\.less$/,
+			// 	use: [
+			// 		MiniCssExtractPlugin.loader,
+			// 		'css-loader',
+			// 		{
+			// 			loader: 'postcss-loader',
+			// 			options: {
+			// 				postcssOptions: {
+			// 					// 添加 autoprefixer 插件
+			// 					plugins: [require('autoprefixer')],
+			// 				},
+			// 			},
+			// 		},
+			// 		'less-loader',
+			// 	],
+			// },
 			{
-				test: /\.less$/,
-				use: [
-					MiniCssExtractPlugin.loader,
-					'css-loader',
-					{
-						loader: 'postcss-loader',
-						options: {
-							postcssOptions: {
-								// 添加 autoprefixer 插件
-								plugins: [require('autoprefixer')],
-							},
-						},
-					},
-					'less-loader',
-				],
+				test: /\.css$/,
+				use: ['style-loader', 'css-loader'],
+			},
+			{
+				test: /\.vue$/,
+				use: 'vue-loader',
 			},
 		],
 	},
 	plugins: [
 		new ESLintPlugin({ extensions: ['.js', '.ts'] }),
 		new MiniCssExtractPlugin(),
-		new HTMLWebpackPlugin(),
+		new HTMLWebpackPlugin({
+			templateContent: `
+			<!DOCTYPE html>
+			<html>
+				<head>
+					<meta charset="utf-8">
+					<title>Webpack App</title>
+				</head>
+				<body>
+					<div id="app" />
+				</body>
+			</html>
+					`,
+		}),
+		new VueLoaderPlugin(),
 	],
 	devServer: {
 		//本地调试服务配置
 		port: 80, //端口
-		host: '0.0.0.0', //局域网访问可填写'0.0.0.0'
 		hot: true, //启动热更新
-		filename: 'main.js', //入口文件引入
-		contentBase: path.join(__dirname, 'src'), //映射资源目录位置
+		open: false, //自动打开浏览器
 	},
 };
