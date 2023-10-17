@@ -8,6 +8,7 @@
 
 <script>
 import { ref, computed } from 'vue';
+import './index.less';
 
 export default {
 	setup() {

@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const ESLintPlugin = require('eslint-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
+const TerserPlugin = require('terser-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { Configuration } = require('webpack');
 /**
@@ -22,6 +24,7 @@ module.exports = {
 	output: {
 		filename: '[name].js',
 		path: path.resolve(__dirname, 'dist'),
+		clean: true,
 	},
 	// 不把vue代码打包进去
 	// externals: {
@@ -57,23 +60,23 @@ module.exports = {
 			// 		'css-loader',
 			// 	],
 			// },
-			// {
-			// 	test: /\.less$/,
-			// 	use: [
-			// 		MiniCssExtractPlugin.loader,
-			// 		'css-loader',
-			// 		{
-			// 			loader: 'postcss-loader',
-			// 			options: {
-			// 				postcssOptions: {
-			// 					// 添加 autoprefixer 插件
-			// 					plugins: [require('autoprefixer')],
-			// 				},
-			// 			},
-			// 		},
-			// 		'less-loader',
-			// 	],
-			// },
+			{
+				test: /\.less$/,
+				use: [
+					MiniCssExtractPlugin.loader,
+					'css-loader',
+					{
+						loader: 'postcss-loader',
+						options: {
+							postcssOptions: {
+								// 添加 autoprefixer 插件
+								plugins: [require('autoprefixer')],
+							},
+						},
+					},
+					'less-loader',
+				],
+			},
 			{
 				test: /\.css$/,
 				use: ['style-loader', 'css-loader'],
@@ -110,6 +113,12 @@ module.exports = {
 		open: false, //自动打开浏览器
 	},
 	optimization: {
+		/* 
+		设置runtimeChunk是将包含chunks 映射关系的 list单独从 app.js里提取出来，因为每一个 chunk 的 id 基本都是基于内容 hash 出来的，所以每次改动都会影响它，如果不将它提取出来的话，等于app.js每次都会改变。缓存就失效了。设置runtimeChunk之后，webpack就会生成一个个runtime~xxx.js的文件。
+		
+		然后每次更改所谓的运行时代码文件时，打包构建时app.js的hash值是不会改变的。如果每次项目更新都会更改app.js的hash值，那么用户端浏览器每次都需要重新加载变化的app.js，如果项目大切优化分包没做好的话会导致第一次加载很耗时，导致用户体验变差。现在设置了runtimeChunk，就解决了这样的问题。所以这样做的目的是避免文件的频繁变更导致浏览器缓存失效，所以其是更好的利用缓存。提升用户体验。
+		 */
+		runtimeChunk: 'single',
 		/* 
 		SplitChunksPlugin 的用法比较抽象，算得上 Webpack 的一个难点，主要能力有：
 			SplitChunksPlugin 支持根据 Module 路径、Module 被引用次数、Chunk 大小、Chunk 请求数等决定是否对 Chunk 做进一步拆解，这些决策都可以通过 optimization.splitChunks 相应配置项调整定制，基于这些能力我们可以实现：
@@ -160,5 +169,19 @@ module.exports = {
 				},
 			},
 		},
+		minimize: true,
+		minimizer: [
+			// Webpack5 之后，约定使用 `'...'` 字面量保留默认 `minimizer` 配置
+			'...',
+			new TerserPlugin({
+				// 将备注信息抽取为单独文件
+				// extractComments: 'all',
+				// 不单独抽取备注内容
+				extractComments: false,
+			}),
+			// 需要使用 `mini-css-extract-plugin` 将 CSS 代码抽取为单独文件
+			// 才能命中 `css-minimizer-webpack-plugin` 默认的 `test` 规则
+			new CssMinimizerPlugin(),
+		],
 	},
 };

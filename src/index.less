@@ -14,10 +14,14 @@
 
 body {
 	// 函数计算
-
 	background: spin(lighten(@color, 25%), 8);
 
 	font-weight: bold;
+
+	margin-top: @size;
+	margin-bottom: @size;
+	margin-left: @size;
+	margin-right: @size;
 
 	padding: @size;
 
@@ -33,6 +37,7 @@ body {
 		padding: @size * 0.6;
 	}
 }
+
 ::placeholder {
 	color: gray;
 }
