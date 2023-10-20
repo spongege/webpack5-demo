@@ -13,85 +13,95 @@ const { Configuration } = require('webpack');
  * @type {Configuration}
  */
 
-module.exports = {
-	entry: {
-		import: path.join(__dirname, './src/index.ts'),
-		// runtime: 'common-runtime',
-	},
-	// entry: './src/index.vue',
-	mode: 'development',
-	devtool: false,
-	output: {
-		filename: '[name].js',
-		path: path.resolve(__dirname, 'dist'),
-		clean: true,
-	},
-	// 不把vue代码打包进去
-	// externals: {
-	// 	vue: 'Vue',
-	// },
-	module: {
-		rules: [
-			{
-				test: /\.js$|\.ts$/,
-				// SWC 在单线程情况下比 Babel 块 20 倍，四核下要快 70 倍。
-				use: 'swc-loader',
-			},
-			// {
-			// 	test: /\.js$|\.ts$/,
-			// 	use: {
-			// 		loader: 'babel-loader',
-			// 		options: {
-			// 			// presets: ['@babel/preset-env', '@babel/preset-typescript'],
-			// 			presets: ['@babel/preset-typescript'],
-			// 		},
-			// 	},
-			// },
-			// mini-css-extract-plugin 库同时提供 Loader、Plugin 组件，需要同时使用
-			// mini-css-extract-plugin 不能与 style-loader 混用，否则报错，所以上述示例中第 9 行需要判断 process.env.NODE_ENV 环境变量决定使用那个 Loader
-			// mini-css-extract-plugin 需要与 html-webpack-plugin 同时使用，才能将产物路径以 link 标签方式插入到 html 中
-			// {
-			// 	test: /\.css$/,
-			// 	use: [
-			// 		// 根据运行环境判断使用那个 loader
-			// 		process.env.NODE_ENV === 'development'
-			// 			? 'style-loader'
-			// 			: MiniCssExtractPlugin.loader,
-			// 		'css-loader',
-			// 	],
-			// },
-			{
-				test: /\.less$/,
-				use: [
-					MiniCssExtractPlugin.loader,
-					'css-loader',
-					{
-						loader: 'postcss-loader',
-						options: {
-							postcssOptions: {
-								// 添加 autoprefixer 插件
-								plugins: [require('autoprefixer')],
+module.exports = [
+	{
+		entry: {
+			import: path.join(__dirname, './src/index.ts'),
+			// runtime: 'common-runtime',
+		},
+		// entry: './src/index.vue',
+		mode: 'development',
+		devtool: false,
+		output: {
+			filename: '[name]-[contenthash:5].js',
+			path: path.resolve(__dirname, 'dist'),
+			clean: true,
+		},
+		// 不把vue代码打包进去
+		// externals: {
+		// 	vue: 'Vue',
+		// },
+		module: {
+			rules: [
+				{
+					test: /\.js$|\.ts$/,
+					// SWC 在单线程情况下比 Babel 块 20 倍，四核下要快 70 倍。
+					use: 'swc-loader',
+				},
+				// {
+				// 	test: /\.js$|\.ts$/,
+				// 	use: {
+				// 		loader: 'babel-loader',
+				// 		options: {
+				// 			// presets: ['@babel/preset-env', '@babel/preset-typescript'],
+				// 			presets: ['@babel/preset-typescript'],
+				// 		},
+				// 	},
+				// },
+				// mini-css-extract-plugin 库同时提供 Loader、Plugin 组件，需要同时使用
+				// mini-css-extract-plugin 不能与 style-loader 混用，否则报错，所以上述示例中第 9 行需要判断 process.env.NODE_ENV 环境变量决定使用那个 Loader
+				// mini-css-extract-plugin 需要与 html-webpack-plugin 同时使用，才能将产物路径以 link 标签方式插入到 html 中
+				// {
+				// 	test: /\.css$/,
+				// 	use: [
+				// 		// 根据运行环境判断使用那个 loader
+				// 		process.env.NODE_ENV === 'development'
+				// 			? 'style-loader'
+				// 			: MiniCssExtractPlugin.loader,
+				// 		'css-loader',
+				// 	],
+				// },
+				{
+					test: /\.less$/,
+					use: [
+						MiniCssExtractPlugin.loader,
+						'css-loader',
+						{
+							loader: 'postcss-loader',
+							options: {
+								postcssOptions: {
+									// 添加 autoprefixer 插件
+									plugins: [require('autoprefixer')],
+								},
 							},
 						},
-					},
-					'less-loader',
-				],
-			},
-			{
-				test: /\.css$/,
-				use: ['style-loader', 'css-loader'],
-			},
-			{
-				test: /\.vue$/,
-				use: 'vue-loader',
-			},
-		],
-	},
-	plugins: [
-		new ESLintPlugin({ extensions: ['.js', '.ts'] }),
-		new MiniCssExtractPlugin(),
-		new HTMLWebpackPlugin({
-			templateContent: `
+						'less-loader',
+					],
+				},
+				{
+					test: /\.css$/,
+					use: ['style-loader', 'css-loader'],
+				},
+				{
+					test: /\.vue$/,
+					use: 'vue-loader',
+				},
+				{
+					test: /\.txt$/,
+					use: [{ loader: './loaders/myloader.js' }],
+				},
+			],
+		},
+		resolveLoader: {
+			modules: ['node_modules', path.resolve(__dirname, 'loaders')],
+		},
+		plugins: [
+			new ESLintPlugin({ extensions: ['.js', '.ts'] }),
+			new MiniCssExtractPlugin({
+				filename: '[name]-[contenthash:5].css',
+			}),
+			new HTMLWebpackPlugin({
+				templateContent: `
 			<!DOCTYPE html>
 			<html>
 				<head>
@@ -103,23 +113,23 @@ module.exports = {
 				</body>
 			</html>
 					`,
-		}),
-		new VueLoaderPlugin(),
-	],
-	devServer: {
-		//本地调试服务配置
-		port: 80, //端口
-		hot: true, //启动热更新
-		open: false, //自动打开浏览器
-	},
-	optimization: {
-		/* 
+			}),
+			new VueLoaderPlugin(),
+		],
+		devServer: {
+			//本地调试服务配置
+			port: 80, //端口
+			hot: true, //启动热更新
+			open: false, //自动打开浏览器
+		},
+		optimization: {
+			/* 
 		设置runtimeChunk是将包含chunks 映射关系的 list单独从 app.js里提取出来，因为每一个 chunk 的 id 基本都是基于内容 hash 出来的，所以每次改动都会影响它，如果不将它提取出来的话，等于app.js每次都会改变。缓存就失效了。设置runtimeChunk之后，webpack就会生成一个个runtime~xxx.js的文件。
 		
 		然后每次更改所谓的运行时代码文件时，打包构建时app.js的hash值是不会改变的。如果每次项目更新都会更改app.js的hash值，那么用户端浏览器每次都需要重新加载变化的app.js，如果项目大切优化分包没做好的话会导致第一次加载很耗时，导致用户体验变差。现在设置了runtimeChunk，就解决了这样的问题。所以这样做的目的是避免文件的频繁变更导致浏览器缓存失效，所以其是更好的利用缓存。提升用户体验。
 		 */
-		runtimeChunk: 'single',
-		/* 
+			runtimeChunk: 'single',
+			/* 
 		SplitChunksPlugin 的用法比较抽象，算得上 Webpack 的一个难点，主要能力有：
 			SplitChunksPlugin 支持根据 Module 路径、Module 被引用次数、Chunk 大小、Chunk 请求数等决定是否对 Chunk 做进一步拆解，这些决策都可以通过 optimization.splitChunks 相应配置项调整定制，基于这些能力我们可以实现：
 			单独打包某些特定路径的内容，例如 node_modules 打包为 vendors；
@@ -131,7 +141,7 @@ module.exports = {
 				加载 Async Chunk 所需请求数不得超过 30；
 				加载 Initial Chunk 所需请求数不得超过 30。
 		*/
-		/* 
+			/* 
 		Chunk 是 Webpack 实现模块打包的关键设计，Webpack 会首先为 Entry 模块、异步模块、Runtime 模块(取决于配置) 创建 Chunk 容器，之后按照 splitChunks 配置进一步优化、裁剪分包内容。
 		
 		splitChunks 配置项与最佳实践:
@@ -155,33 +165,120 @@ module.exports = {
 		设置 optimization.runtimeChunk 为 true，将运行时代码拆分为独立资源。
 		不过，现实世界很复杂，同样的方法放在不同场景可能会有完全相反的效果，建议你根据自己项目的实际情况(代码量、基础设施环境)，择优选用上述实践。
 		*/
-		splitChunks: {
-			cacheGroups: {
-				// test：接受正则表达式、函数及字符串，所有符合 test 判断的 Module 或 Chunk 都会被分到该组；
-				// type：接受正则表达式、函数及字符串，与 test 类似均用于筛选分组命中的模块，区别是它判断的依据是文件类型而不是文件名，例如 type = 'json' 会命中所有 JSON 文件；
-				// idHint：字符串型，用于设置 Chunk ID，它还会被追加到最终产物文件名中，例如 idHint = 'vendors' 时，输出产物文件名形如 vendors-xxx-xxx.js ；
-				// priority：数字型，用于设置该分组的优先级，若模块命中多个缓存组，则优先被分到 priority 更大的组。
-				vendor: {
-					test: /node_modules/,
-					// name: 'vendor',
-					chunks: 'all',
-					idHint: 'vendors',
+			splitChunks: {
+				cacheGroups: {
+					// test：接受正则表达式、函数及字符串，所有符合 test 判断的 Module 或 Chunk 都会被分到该组；
+					// type：接受正则表达式、函数及字符串，与 test 类似均用于筛选分组命中的模块，区别是它判断的依据是文件类型而不是文件名，例如 type = 'json' 会命中所有 JSON 文件；
+					// idHint：字符串型，用于设置 Chunk ID，它还会被追加到最终产物文件名中，例如 idHint = 'vendors' 时，输出产物文件名形如 vendors-xxx-xxx.js ；
+					// priority：数字型，用于设置该分组的优先级，若模块命中多个缓存组，则优先被分到 priority 更大的组。
+					vendor: {
+						test: /node_modules/,
+						// name: 'vendor',
+						chunks: 'all',
+						idHint: 'vendors',
+					},
 				},
 			},
+			minimize: true,
+			minimizer: [
+				// Webpack5 之后，约定使用 `'...'` 字面量保留默认 `minimizer` 配置
+				'...',
+				new TerserPlugin({
+					// 将备注信息抽取为单独文件
+					// extractComments: 'all',
+					// 不单独抽取备注内容
+					extractComments: false,
+				}),
+				// 需要使用 `mini-css-extract-plugin` 将 CSS 代码抽取为单独文件
+				// 才能命中 `css-minimizer-webpack-plugin` 默认的 `test` 规则
+				new CssMinimizerPlugin(),
+			],
+			usedExports: true,
 		},
-		minimize: true,
-		minimizer: [
-			// Webpack5 之后，约定使用 `'...'` 字面量保留默认 `minimizer` 配置
-			'...',
-			new TerserPlugin({
-				// 将备注信息抽取为单独文件
-				// extractComments: 'all',
-				// 不单独抽取备注内容
-				extractComments: false,
+	},
+	// loader 测试
+	{
+		entry: {
+			import: path.join(__dirname, './src/loadertest.js'),
+		},
+		mode: 'development',
+		devtool: 'source-map',
+		output: {
+			filename: 'index-[contenthash:5].js',
+			path: path.resolve(__dirname, 'dist-loader'),
+			clean: true,
+		},
+		module: {
+			rules: [
+				// {
+				// 	test: /\.js$/,
+				// 	use: [
+				// 		{
+				// 			loader: require.resolve('./loaders/loader1.js'),
+				// 		},
+				// 		{
+				// 			loader: require.resolve('./loaders/loader2.js'),
+				// 		},
+				// 	],
+				// },
+				{
+					test: /\.js$/,
+					use: [
+						{
+							loader: require.resolve('./loaders/loader1.js'),
+						},
+					],
+				},
+				{
+					// rule.enforce: pre/post/inline()/normal， pre前置执行，normal默认配置，post后置执行，inline loader 文档中并不建议我们自己手动加入，而是应该由其他的loader自动生成（执行顺序介于 post 和 normal 之间）
+					/* 
+						inline loader 使用方式：
+						requre("!!path-to-loader1!path-to-loader2!path-to-loader3!./sourceFile.js")
+						
+						抛开'!!, !, -!'等标识来看，从右向左来看就是让sourceFile.js分别通过loader3，loader2，loader1三个loader来进行处理。
+
+						!表示所有的normal loader全部不执行（执行pre,post和inline loader）
+						-！表示所有的normal loader和pre loader都不执行（执行post和inline loader）
+						!! 表示所有的normal pre 和 post loader全部不执行（只执行inline loader）
+					*/
+					// enforce: 'post',
+					test: /\.js$/,
+					use: [
+						{
+							loader: require.resolve('./loaders/loader2.js'),
+						},
+					],
+				},
+				{
+					// enforce: 'post',
+					test: /\.js$/,
+					use: [
+						{
+							loader: require.resolve('./loaders/loader3.js'),
+						},
+					],
+				},
+			],
+		},
+		plugins: [
+			new ESLintPlugin({ extensions: ['.js', '.ts'] }),
+			new MiniCssExtractPlugin({
+				filename: '[name]-[contenthash:5].css',
 			}),
-			// 需要使用 `mini-css-extract-plugin` 将 CSS 代码抽取为单独文件
-			// 才能命中 `css-minimizer-webpack-plugin` 默认的 `test` 规则
-			new CssMinimizerPlugin(),
+			new HTMLWebpackPlugin({
+				templateContent: `
+		<!DOCTYPE html>
+		<html>
+			<head>
+				<meta charset="utf-8">
+				<title>Webpack App</title>
+			</head>
+			<body>
+				<div id="app" />
+			</body>
+		</html>
+				`,
+			}),
 		],
 	},
-};
+];
