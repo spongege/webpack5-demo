@@ -88,7 +88,14 @@ module.exports = [
 				},
 				{
 					test: /\.txt$/,
-					use: [{ loader: './loaders/myloader.js' }],
+					use: [
+						{
+							loader: './loaders/myloader.js',
+							options: {
+								// foo: 'foo',
+							},
+						},
+					],
 				},
 			],
 		},
@@ -197,88 +204,88 @@ module.exports = [
 		},
 	},
 	// loader 测试
-	{
-		entry: {
-			import: path.join(__dirname, './src/loadertest.js'),
-		},
-		mode: 'development',
-		devtool: 'source-map',
-		output: {
-			filename: 'index-[contenthash:5].js',
-			path: path.resolve(__dirname, 'dist-loader'),
-			clean: true,
-		},
-		module: {
-			rules: [
-				// {
-				// 	test: /\.js$/,
-				// 	use: [
-				// 		{
-				// 			loader: require.resolve('./loaders/loader1.js'),
-				// 		},
-				// 		{
-				// 			loader: require.resolve('./loaders/loader2.js'),
-				// 		},
-				// 	],
-				// },
-				{
-					test: /\.js$/,
-					use: [
-						{
-							loader: require.resolve('./loaders/loader1.js'),
-						},
-					],
-				},
-				{
-					// rule.enforce: pre/post/inline()/normal， pre前置执行，normal默认配置，post后置执行，inline loader 文档中并不建议我们自己手动加入，而是应该由其他的loader自动生成（执行顺序介于 post 和 normal 之间）
-					/* 
-						inline loader 使用方式：
-						requre("!!path-to-loader1!path-to-loader2!path-to-loader3!./sourceFile.js")
-						
-						抛开'!!, !, -!'等标识来看，从右向左来看就是让sourceFile.js分别通过loader3，loader2，loader1三个loader来进行处理。
+	// {
+	// 	entry: {
+	// 		import: path.join(__dirname, './src/loadertest.js'),
+	// 	},
+	// 	mode: 'development',
+	// 	devtool: 'source-map',
+	// 	output: {
+	// 		filename: 'index-[contenthash:5].js',
+	// 		path: path.resolve(__dirname, 'dist-loader'),
+	// 		clean: true,
+	// 	},
+	// 	module: {
+	// 		rules: [
+	// 			// {
+	// 			// 	test: /\.js$/,
+	// 			// 	use: [
+	// 			// 		{
+	// 			// 			loader: require.resolve('./loaders/loader1.js'),
+	// 			// 		},
+	// 			// 		{
+	// 			// 			loader: require.resolve('./loaders/loader2.js'),
+	// 			// 		},
+	// 			// 	],
+	// 			// },
+	// 			{
+	// 				test: /\.js$/,
+	// 				use: [
+	// 					{
+	// 						loader: require.resolve('./loaders/loader1.js'),
+	// 					},
+	// 				],
+	// 			},
+	// 			{
+	// 				// rule.enforce: pre/post/inline()/normal， pre前置执行，normal默认配置，post后置执行，inline loader 文档中并不建议我们自己手动加入，而是应该由其他的loader自动生成（执行顺序介于 post 和 normal 之间）
+	// 				/*
+	// 					inline loader 使用方式：
+	// 					requre("!!path-to-loader1!path-to-loader2!path-to-loader3!./sourceFile.js")
 
-						!表示所有的normal loader全部不执行（执行pre,post和inline loader）
-						-！表示所有的normal loader和pre loader都不执行（执行post和inline loader）
-						!! 表示所有的normal pre 和 post loader全部不执行（只执行inline loader）
-					*/
-					// enforce: 'post',
-					test: /\.js$/,
-					use: [
-						{
-							loader: require.resolve('./loaders/loader2.js'),
-						},
-					],
-				},
-				{
-					// enforce: 'post',
-					test: /\.js$/,
-					use: [
-						{
-							loader: require.resolve('./loaders/loader3.js'),
-						},
-					],
-				},
-			],
-		},
-		plugins: [
-			new ESLintPlugin({ extensions: ['.js', '.ts'] }),
-			new MiniCssExtractPlugin({
-				filename: '[name]-[contenthash:5].css',
-			}),
-			new HTMLWebpackPlugin({
-				templateContent: `
-		<!DOCTYPE html>
-		<html>
-			<head>
-				<meta charset="utf-8">
-				<title>Webpack App</title>
-			</head>
-			<body>
-				<div id="app" />
-			</body>
-		</html>
-				`,
-			}),
-		],
-	},
+	// 					抛开'!!, !, -!'等标识来看，从右向左来看就是让sourceFile.js分别通过loader3，loader2，loader1三个loader来进行处理。
+
+	// 					!表示所有的normal loader全部不执行（执行pre,post和inline loader）
+	// 					-！表示所有的normal loader和pre loader都不执行（执行post和inline loader）
+	// 					!! 表示所有的normal pre 和 post loader全部不执行（只执行inline loader）
+	// 				*/
+	// 				// enforce: 'post',
+	// 				test: /\.js$/,
+	// 				use: [
+	// 					{
+	// 						loader: require.resolve('./loaders/loader2.js'),
+	// 					},
+	// 				],
+	// 			},
+	// 			{
+	// 				// enforce: 'post',
+	// 				test: /\.js$/,
+	// 				use: [
+	// 					{
+	// 						loader: require.resolve('./loaders/loader3.js'),
+	// 					},
+	// 				],
+	// 			},
+	// 		],
+	// 	},
+	// 	plugins: [
+	// 		new ESLintPlugin({ extensions: ['.js', '.ts'] }),
+	// 		new MiniCssExtractPlugin({
+	// 			filename: '[name]-[contenthash:5].css',
+	// 		}),
+	// 		new HTMLWebpackPlugin({
+	// 			templateContent: `
+	// 	<!DOCTYPE html>
+	// 	<html>
+	// 		<head>
+	// 			<meta charset="utf-8">
+	// 			<title>Webpack App</title>
+	// 		</head>
+	// 		<body>
+	// 			<div id="app" />
+	// 		</body>
+	// 	</html>
+	// 			`,
+	// 		}),
+	// 	],
+	// },
 ];
