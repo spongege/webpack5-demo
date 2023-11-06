@@ -6,6 +6,7 @@ const { VueLoaderPlugin } = require('vue-loader');
 const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const BlockPlugin = require('./plugins/blockPlugin');
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { Configuration } = require('webpack');
 /**
@@ -122,6 +123,7 @@ module.exports = [
 					`,
 			}),
 			new VueLoaderPlugin(),
+			new BlockPlugin(),
 		],
 		devServer: {
 			//本地调试服务配置
